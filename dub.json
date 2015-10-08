@@ -1,0 +1,8 @@
+{
+	"name": "file2d",
+	"description": "simple tool to create embedable files in #dlang",
+	"copyright": "Copyright © 2015, Stephan Dilly",
+	"authors": ["Stephan Dilly"],
+	"license": "MIT",
+    "targetType": "executable",
+}
