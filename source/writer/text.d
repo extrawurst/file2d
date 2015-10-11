@@ -1,38 +1,38 @@
 module file2d.writer.text;
 
-import std.stdio;
+import std.array:appender;
+import std.format;
+import std.conv;
 
-void writeEscaped(in char c)
+private string escaped(in char c) pure
 {
 	switch(c)
 	{
 	case '\n':
-		write("\\n");
-		break;
+		return "\\n";
 	case '\r':
-		write("\\r");
-		break;
+		return "\\r";
 	case '\t':
-		write("\\t");
-		break;
+        return "\\t";
 	case '\\':
-		write("\\\\");
-		break;
+        return "\\\\";
 	case '"':
-		write("\\\"");
-		break;
+        return "\\\"";
 	default:
-		write(c);
-		break;
+        return to!string(c);
 	}
 }
 
-void writeText(ref ubyte[] content, in string variableName)
+string convertToText(in ubyte[] content, in string variableName) pure
 {
-	writef("static immutable string %s = \"", variableName);
+    auto ap = appender!string();
+
+	ap.put(format("static immutable string %s = \"", variableName));
 	foreach(i, ubyte b; content)
 	{
-		writeEscaped(cast(char) b);
+		ap.put(escaped(cast(char) b));
 	}
-	writefln("\";");
+	ap.put("\";\n");
+
+    return ap.data;
 }

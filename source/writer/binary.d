@@ -1,24 +1,29 @@
 module file2d.writer.binary;
 
-import std.stdio;
+import std.array:appender;
+import std.format;
 
-void writeBinary(ref ubyte[] content, in string variableName, in int bytesPerLine, in bool trailingComma)
+string convertToBinary(in ubyte[] content, in string variableName, in int bytesPerLine, in bool trailingComma) pure
 {
-	writefln("static immutable ubyte[%s] %s = [", content.length, variableName);
-	write("\t");
+    auto ap = appender!string();
+
+    ap.put(format("static immutable ubyte[%s] %s = [\n", content.length, variableName));
+    ap.put("\t");
 	foreach(i, ubyte b; content)
 	{
 		if(i>1 && (i)%bytesPerLine==0)
-			write("\t");
+            ap.put("\t");
 
-		writef("0x%.2x",b);
+        ap.put(format("0x%.2x",b));
 		if(!trailingComma && i<content.length-1) // Will not do this check when trailingComma is true
-			write(",");
+            ap.put(",");
 		if(trailingComma)
-			write(",");
+            ap.put(",");
 
 		if(i>0 && (i+1) % bytesPerLine == 0)
-			write("\n");
+            ap.put("\n");
 	}
-	writefln("\n];");
+    ap.put(format("\n];\n"));
+
+    return ap.data;
 }

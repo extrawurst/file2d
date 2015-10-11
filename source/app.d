@@ -1,101 +1,58 @@
-import std.stdio;
-import std.getopt;
-import std.file : read;
+module app;
 
 import file2d.writer.binary;
 import file2d.writer.text;
 
-extern(C) int isatty(int);
-alias isTTY = isatty;
-
-int bytesPerLine = 20;
-FileType fileType = FileType.binary;
-string variableName = "data";
-string moduleName = "mod";
-bool helpWanted = false;
-bool trailingComma = false;
-bool force = false;
-
+///
 enum FileType
 {
     binary, text
 }
 
-void main(string[] args)
+///
+string createModule(FileType fileType, in ubyte[] content, string moduleName, string variableName, int bytesPerLine, bool trailingComma) pure
 {
-    // only using getopt functions from phobos 2.066
-    getopt(
-        args,
-        config.passThrough,
-        "help|h", &helpWanted,
-        "bytesPerLine|l", &bytesPerLine,
-        "type|t", &fileType,
-        "variable|v", &variableName,
-        "module|m", &moduleName,
-        "trailingComma", &trailingComma,
-        "force|f", &force
-    );
+    import std.array;
+    import std.format;
+    auto ap = appender!string;
 
-    if(helpWanted)
-    {
-        writeln("file2d");
-        writeln("Simple tool to create embedable files in #dlang");
-        writeln();
-        writeln("        --help");
-        writeln("            -h  Shows this help text.");
-        writeln("--bytesPerLine=<arg>");
-        writeln("            -n  How many bytes are appended to the array before starting a new line. (Defaults to 20)");
-        writeln("        --type={binary|text}");
-        writeln("            -t  Sets the file type to interpret. (Defaults to binary)");
-        writeln("    --variable=<arg>");
-        writeln("            -v  Sets the variable name. (Defaults to data)");
-        writeln("      --module=<arg>");
-        writeln("            -m  Sets the module name. (Defaults to mod)");
-        writeln("--trailingComma Array will end with a comma if this is set");
-        writeln("       --force");
-        writeln("            -f  Forces output to stdout even if it is a terminal.");
-        return;
-    }
-
-    ubyte[] content;
-    if(args.length == 1) // No file given; read from stdin instead
-    {
-        // This allows neat piping like
-        // date | file2d
-        // file2d < README.md > readme.d
-
-        if(isTTY(0)) // Checks if stdin is terminal or piped
-        {
-            writeln("Can't read from terminal. Use pipe instead or give a file argument!");
-            return;
-        }
-
-        string s;
-        while(!stdin.eof)
-        {
-            stdin.readf("%s", &s);
-            content ~= cast(ubyte[]) s;
-        }
-    }
-    else
-        content = cast(ubyte[])read(args[1]);
-
-    if(!force && content.length > 10_000 && isTTY(1)) // Give a warning for files with more than 10000 bytes of size
-    {
-        writeln("stdout is a terminal. Pipe to a file or use --force instead!");
-        return;
-    }
-
-    writefln("module %s;\n", moduleName);
+    ap.put(format("module %s;\n\n", moduleName));
     switch(fileType) with(FileType)
     {
-    case binary:
-        writeBinary(content, variableName, bytesPerLine, trailingComma);
-        break;
-    case text:
-        writeText(content, variableName);
-        break;
-    default:
-        assert(0, "Invalid File Type");
+        case binary:
+            ap.put(convertToBinary(content, variableName, bytesPerLine, trailingComma));
+            break;
+        case text:
+            ap.put(convertToText(content, variableName));
+            break;
+        default:
+            assert(0, "Invalid File Type");
     }
+
+    return ap.data;
+}
+
+unittest
+{
+    import std.format;
+    import std.file;
+
+    auto input = readText("test/example.txt");
+    auto correctRes = readText("test/generatedText.d");
+    auto generatedRes = createModule(FileType.text, cast(ubyte[])input, "generatedText", "data", 20, false);
+
+    assert(generatedRes == correctRes);
+}
+
+unittest
+{
+    import std.format;
+    import std.file;
+    import std.format;
+    
+    auto input = readText("test/example.txt");
+    auto correctRes = readText("test/generatedBinary.d");
+    auto generatedRes = createModule(FileType.binary, cast(ubyte[])input, "generatedBinary", "dataBin", 20, false);
+    
+    assert(generatedRes == correctRes, format("%s",generatedRes));
 }
