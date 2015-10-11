@@ -1,4 +1,4 @@
-# file2d
+# file2d [![Build Status](https://api.travis-ci.org/Extrawurst/file2d.png)](https://travis-ci.org/Extrawurst/file2d)
 Simple tool to create embedable files in #dlang
 
 Usage:
