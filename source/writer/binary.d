@@ -1,7 +1,7 @@
 module file2d.writer.binary;
 
 import std.array:appender;
-import std.format;
+import std.string:format;
 
 string convertToBinary(in ubyte[] content, in string variableName, in int bytesPerLine, in bool trailingComma) pure
 {

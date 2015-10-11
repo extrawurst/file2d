@@ -1,7 +1,7 @@
 module file2d.writer.text;
 
 import std.array:appender;
-import std.format;
+import std.string:format;
 import std.conv;
 
 private string escaped(in char c) pure

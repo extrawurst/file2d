@@ -1,5 +1,7 @@
 module app;
 
+import std.string:format;
+
 import file2d.writer.binary;
 import file2d.writer.text;
 
@@ -13,7 +15,7 @@ enum FileType
 string createModule(FileType fileType, in ubyte[] content, string moduleName, string variableName, int bytesPerLine, bool trailingComma) pure
 {
     import std.array;
-    import std.format;
+
     auto ap = appender!string;
 
     ap.put(format("module %s;\n\n", moduleName));
@@ -34,7 +36,6 @@ string createModule(FileType fileType, in ubyte[] content, string moduleName, st
 
 unittest
 {
-    import std.format;
     import std.file;
 
     auto input = readText("test/example.txt");
@@ -46,9 +47,7 @@ unittest
 
 unittest
 {
-    import std.format;
     import std.file;
-    import std.format;
     
     auto input = readText("test/example.txt");
     auto correctRes = readText("test/generatedBinary.d");
