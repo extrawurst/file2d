@@ -1,4 +1,21 @@
-﻿module writer.main;
+﻿module main;
+
+import std.stdio;
+import std.getopt;
+import std.file : read;
+
+import app;
+
+extern(C) int isatty(int);
+alias isTTY = isatty;
+
+int bytesPerLine = 20;
+FileType fileType = FileType.binary;
+string variableName = "data";
+string moduleName = "mod";
+bool helpWanted = false;
+bool trailingComma = false;
+bool force = false;
 
 ///
 void main(string[] args)
